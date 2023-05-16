@@ -6,6 +6,11 @@ branding:
   color: 'green'
 
 inputs:
+  container-name:
+    description: 'Name of the container to create (default "mongodb")'
+    required: false
+    default: 'mongodb'
+
   mongodb-version:
     description: 'MongoDB version to use (default "latest")'
     required: false
@@ -46,3 +51,4 @@ runs:
     - ${{ inputs.mongodb-db }}
     - ${{ inputs.mongodb-username }}
     - ${{ inputs.mongodb-password }}
+    - ${{ inputs.container-name }}

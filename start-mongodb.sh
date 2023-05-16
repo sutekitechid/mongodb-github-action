@@ -7,6 +7,7 @@ MONGODB_PORT=$3
 MONGODB_DB=$4
 MONGODB_USERNAME=$5
 MONGODB_PASSWORD=$6
+CONTAINER_NAME=$7
 
 
 if [ -z "$MONGODB_VERSION" ]; then
@@ -37,7 +38,7 @@ if [ -z "$MONGODB_REPLICA_SET" ]; then
   echo "  - credentials [$MONGODB_USERNAME:$MONGODB_PASSWORD]"
   echo ""
 
-  docker run --name mongodb --publish $MONGODB_PORT:27017 -e MONGO_INITDB_DATABASE=$MONGODB_DB -e MONGO_INITDB_ROOT_USERNAME=$MONGODB_USERNAME -e MONGO_INITDB_ROOT_PASSWORD=$MONGODB_PASSWORD --detach mongo:$MONGODB_VERSION
+  docker run --name $CONTAINER_NAME --publish $MONGODB_PORT:27017 -e MONGO_INITDB_DATABASE=$MONGODB_DB -e MONGO_INITDB_ROOT_USERNAME=$MONGODB_USERNAME -e MONGO_INITDB_ROOT_PASSWORD=$MONGODB_PASSWORD --detach mongo:$MONGODB_VERSION
 
   if [ $? -ne 0 ]; then
       echo "Error starting MongoDB Docker container"
@@ -55,7 +56,7 @@ echo "  - version [$MONGODB_VERSION]"
 echo "  - replica set [$MONGODB_REPLICA_SET]"
 echo ""
 
-docker run --name mongodb --publish $MONGODB_PORT:$MONGODB_PORT --detach mongo:$MONGODB_VERSION --replSet $MONGODB_REPLICA_SET --port $MONGODB_PORT
+docker run --name $CONTAINER_NAME --publish $MONGODB_PORT:$MONGODB_PORT --detach mongo:$MONGODB_VERSION --replSet $MONGODB_REPLICA_SET --port $MONGODB_PORT
 
 if [ $? -ne 0 ]; then
     echo "Error starting MongoDB Docker container"
