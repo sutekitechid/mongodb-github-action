@@ -8,7 +8,18 @@ MONGODB_DB=$4
 MONGODB_USERNAME=$5
 MONGODB_PASSWORD=$6
 CONTAINER_NAME=$7
+echo "::group::Container name [$CONTAINER_NAME]"
 
+if [ -z "$MONGODB_PORT" ]; then
+  echo "::group::Finding available port"
+  # scan all used ports in the machine outside docker, then find the available one
+  start_port=27000
+  end_port=28000
+  for port in $(seq $start_port $end_port); do
+    (echo >/dev/tcp/localhost/$port) >/dev/null 2>&1 && continue || { MONGODB_PORT=$port; break; };
+  done
+  echo "::group::Selected port [$MONGODB_PORT]"
+fi
 
 if [ -z "$MONGODB_VERSION" ]; then
   echo ""
@@ -69,7 +80,7 @@ echo "::group::Waiting for MongoDB to accept connections"
 sleep 1
 TIMER=0
 
-until docker exec --tty mongodb $MONGO_CLIENT --port $MONGODB_PORT --eval "db.serverStatus()" # &> /dev/null
+until docker exec --tty $CONTAINER_NAME $MONGO_CLIENT --port $MONGODB_PORT --eval "db.serverStatus()" # &> /dev/null
 do
   sleep 1
   echo "."
@@ -85,7 +96,7 @@ echo "::endgroup::"
 
 echo "::group::Initiating replica set [$MONGODB_REPLICA_SET]"
 
-docker exec --tty mongodb $MONGO_CLIENT --port $MONGODB_PORT --eval "
+docker exec --tty $CONTAINER_NAME $MONGO_CLIENT --port $MONGODB_PORT --eval "
   rs.initiate({
     \"_id\": \"$MONGODB_REPLICA_SET\",
     \"members\": [ {
@@ -100,7 +111,7 @@ echo "::endgroup::"
 
 
 echo "::group::Checking replica set status [$MONGODB_REPLICA_SET]"
-docker exec --tty mongodb $MONGO_CLIENT --port $MONGODB_PORT --eval "
+docker exec --tty $CONTAINER_NAME $MONGO_CLIENT --port $MONGODB_PORT --eval "
   rs.status()
 "
 echo "::endgroup::"
